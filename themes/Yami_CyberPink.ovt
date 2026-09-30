@@ -1,0 +1,817 @@
+/* ------------------------------------------------------------------------- *
+ * Cyber Pink: a futuristic HUD style for OBS Studio.
+ *
+ * Design notes
+ *   - Blue-black surfaces so neon accents read crisply without glare.
+ *   - Hot pink is the action colour: primary button, selection, sliders.
+ *     Neon cyan is the data colour: focus rings, progress, audio levels.
+ *     Signal yellow for warnings. Every other OBS palette colour is remapped
+ *     into these families so nothing off-palette leaks through.
+ *   - HUD panel headers: a pink edge with a faint pink tint fading across the
+ *     title bar, hairline borders and small, sharp 3px corners.
+ *   - Ambient blending: the menu bar picks up a soft pink glow on the left and
+ *     the status bar a cyan glow on the right; timecodes use a monospace face.
+ * ------------------------------------------------------------------------- */
+
+@OBSThemeMeta {
+    name: 'Cyber Pink';
+    id: 'com.obsproject.Yami.CyberPink';
+    extends: 'com.obsproject.Yami';
+    author: 'TWISTEDST1';
+    dark: 'true';
+}
+
+@OBSThemeVars {
+    /* Blue-black surfaces (1 = lightest, 8 = darkest) */
+    --grey1: #6E7794;
+    --grey2: #3E4560;
+    --grey3: #2A2F42;
+    --grey4: #1D2130;
+    --grey5: #151823;
+    --grey6: #0E1017;
+    --grey7: #0B0C12;
+    --grey8: #07080C;
+
+    /* Palette remap: blue/teal -> neon cyan */
+    --blue1: #7FF0F7;
+    --blue2: #00E1F0;
+    --blue3: #00B8C8;
+    --blue4: #00929E;
+    --blue5: #0B3A42;
+    --blue6: #0A242B;
+
+    --teal1: #7FF0F7;
+    --teal2: #00E1F0;
+    --teal3: #00B8C8;
+    --teal4: #00929E;
+    --teal5: #0B3A42;
+    --teal6: #0A242B;
+
+    /* Palette remap: purple/pink -> hot pink */
+    --purple1: #FF7AB4;
+    --purple2: #FF4D9A;
+    --purple3: #E61E74;
+    --purple4: #B8145C;
+    --purple5: #481732;
+    --purple6: #351529;
+
+    --pink1: #FF7AB4;
+    --pink2: #FF4D9A;
+    --pink3: #E61E74;
+    --pink4: #B8145C;
+    --pink5: #481732;
+    --pink6: #351529;
+
+    /* Palette remap: red -> neon red, green -> acid mint, yellow -> signal */
+    --red1: #FF6B85;
+    --red2: #FF2E63;
+    --red3: #E6194B;
+    --red4: #B8123A;
+    --red5: #3E1626;
+    --red6: #2A0F1A;
+
+    --green1: #6BFFC4;
+    --green2: #2EF2A0;
+    --green3: #14C98A;
+    --green4: #0F9E6E;
+    --green5: #0A4A36;
+    --green6: #082E23;
+
+    --yellow1: #FFE07A;
+    --yellow2: #FFD23F;
+    --yellow3: #E0B01E;
+    --yellow4: #B08812;
+    --yellow5: #3E371F;
+    --yellow6: #2B2614;
+
+    /* Accent: hot pink */
+    --primary: #FF2E88;
+    --primary_light: #FF4D9A;
+    --primary_lighter: #FF7AB4;
+    --primary_dark: #E61E74;
+    --primary_darker: #B8145C;
+
+    --text: #E8EAF2;
+    --text_light: #FFFFFF;
+    --text_muted: #8088A3;
+    --text_disabled: #4C5470;
+    --text_inactive: #C9CEDD;
+
+    --bg_window: var(--grey8);
+    --bg_base: var(--grey6);
+    --bg_preview: #05060A;
+
+    --border_color: var(--grey4);
+    --border_radius: 3px;
+    --border_radius_small: 2px;
+    --border_radius_large: 4px;
+
+    --input_bg: var(--grey7);
+    --input_bg_hover: var(--grey5);
+    --input_bg_focus: var(--grey7);
+    --input_border: #5A6280;
+    --input_border_hover: #8A93B0;
+    --input_border_focus: #00E1F0;
+
+    --list_item_bg_selected: #351529;
+    --list_item_bg_hover: var(--grey5);
+
+    --button_bg: var(--grey5);
+    --button_bg_hover: var(--grey4);
+    --button_bg_down: var(--grey7);
+    --button_bg_disabled: var(--grey6);
+    --button_border: var(--grey3);
+    --button_border_hover: #6E1C44;
+    --button_border_focus: #00E1F0;
+
+    --tab_bg: var(--grey6);
+    --tab_bg_hover: var(--grey5);
+    --tab_bg_down: var(--grey4);
+    --tab_border: var(--grey4);
+    --tab_border_hover: var(--grey2);
+    --tab_border_focus: #00E1F0;
+    --tab_border_selected: var(--primary);
+
+    --scrollbar_size: 10px;
+    --scrollbar_bg: var(--grey7);
+    --scrollbar_handle: var(--grey3);
+    --scrollbar_hover: #6E1C44;
+    --scrollbar_down: var(--primary);
+    --scrollbar_border: var(--grey7);
+
+    --separator_hover: var(--primary);
+    --highlight_color: var(--primary);
+
+    --danger: #FF4D6D;
+
+    --palette_highlight: #B8145C;
+    --palette_highlightedText: #FFFFFF;
+
+    --palette_link: #00E1F0;
+    --palette_linkVisited: #7FF0F7;
+}
+
+/* ============================== Window chrome ============================= */
+
+QMainWindow,
+QDialog {
+    background-color: var(--bg_window);
+}
+
+/* Default text/row selection: deep pink with white text (readable) */
+QWidget {
+    selection-background-color: #B8145C;
+    selection-color: #FFFFFF;
+}
+
+/* Ambient pink glow blending in from the left */
+QMenuBar {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #1A0C18, stop:0.35 #0A0B11, stop:1 #07080C);
+    border-bottom: 1px solid #1D2130;
+}
+
+QMenuBar::item {
+    border-radius: 2px;
+    margin: 3px 1px;
+    color: var(--text_inactive);
+    border-bottom: 2px solid transparent;
+}
+
+QMenuBar::item:selected {
+    background: var(--grey4);
+    color: var(--text_light);
+    border-bottom: 2px solid #FF2E88;
+}
+
+QMenu {
+    background-color: var(--grey6);
+    border: 1px solid var(--grey3);
+    border-top: 1px solid #6E1C44;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+QMenu::item {
+    border-radius: 2px;
+    border-left: 2px solid transparent;
+}
+
+QMenu::item:selected,
+QMenu::item:selected:hover {
+    background: #351529;
+    border: 1px solid #351529;
+    border-left: 2px solid #FF2E88;
+    color: var(--text_light);
+}
+
+QMenu::separator {
+    background: var(--grey4);
+}
+
+QToolTip {
+    background-color: var(--grey6);
+    color: var(--text);
+    border: 1px solid #6E1C44;
+    border-radius: 2px;
+    padding: 4px 8px;
+}
+
+QMainWindow::separator:hover {
+    border: none;
+    background: #FF2E88;
+}
+
+/* ================================= Docks ================================== */
+
+QDockWidget {
+    color: var(--text_inactive);
+    font-weight: bold;
+}
+
+/* HUD header: pink edge, pink tint fading across, hairline underline */
+QDockWidget::title {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #2A1224, stop:0.45 #12141D, stop:1 #0E1017);
+    border: 1px solid var(--grey4);
+    border-left: 2px solid #FF2E88;
+    border-bottom: 1px solid #521837;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    padding: 6px 10px;
+}
+
+QDockWidget::close-button:hover,
+QDockWidget::float-button:hover {
+    background: #351529;
+}
+
+OBSDock > QWidget {
+    background: var(--grey6);
+    border: 1px solid var(--grey4);
+    border-top: none;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+OBSDock QToolBar {
+    border-top: 1px solid var(--grey4);
+    background: transparent;
+}
+
+OBSDock QToolBar QToolButton {
+    border-radius: 2px;
+}
+
+OBSDock QToolBar QToolButton:hover {
+    background: #351529;
+    border-color: #6E1C44;
+}
+
+OBSDock QToolBar QToolButton:disabled {
+    background: transparent;
+}
+
+/* ============================= Lists & trees ============================== */
+
+QListView,
+QListWidget,
+QTreeView,
+SourceTree,
+SceneTree {
+    background: transparent;
+    border: none;
+}
+
+QListView::item,
+QListWidget::item,
+SourceTreeItem {
+    border-radius: 2px;
+    border: 1px solid transparent;
+    margin: 1px 2px;
+}
+
+QListView::item:hover,
+QListWidget::item:hover {
+    background: var(--grey5);
+    border: 1px solid var(--grey4);
+}
+
+/* Selection: pink tint with a neon edge */
+QListView::item:selected,
+QListWidget::item:selected {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #481732, stop:1 #2A1224);
+    border: 1px solid #521837;
+    border-left: 3px solid #FF2E88;
+    color: var(--text_light);
+}
+
+QListView::item:selected:hover,
+QListWidget::item:selected:hover {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #5A1C3E, stop:1 #351529);
+    border: 1px solid #6E1C44;
+    border-left: 3px solid #FF2E88;
+    color: var(--text_light);
+}
+
+/* Keyboard focus: cyan edge. Selected + focused: stays pink. */
+QListView::item:focus,
+QListWidget::item:focus {
+    border: 1px solid #0B3A42;
+    border-left: 3px solid #00E1F0;
+}
+
+QListView::item:selected:focus,
+QListWidget::item:selected:focus {
+    border: 1px solid #521837;
+    border-left: 3px solid #FF2E88;
+}
+
+QListView::item:selected:focus:hover,
+QListWidget::item:selected:focus:hover {
+    border: 1px solid #6E1C44;
+    border-left: 3px solid #FF2E88;
+}
+
+.list-grid SceneTree::item {
+    border-radius: 3px;
+    background: var(--grey5);
+    border: 1px solid var(--grey4);
+}
+
+.list-grid SceneTree::item:hover {
+    background: var(--grey4);
+    border-color: #521837;
+}
+
+.list-grid SceneTree::item:selected,
+.list-grid SceneTree::item:checked,
+.list-grid SceneTree::item:selected:hover {
+    background: #351529;
+    border: 1px solid #FF2E88;
+}
+
+QTableView,
+QTreeView {
+    selection-background-color: #481732;
+    selection-color: #FFFFFF;
+}
+
+QTableView {
+    gridline-color: var(--grey4);
+}
+
+QHeaderView::section {
+    background-color: var(--grey5);
+    color: var(--text_muted);
+    border: none;
+    border-right: 1px solid var(--grey4);
+    padding: 4px 8px;
+}
+
+/* ================================ Buttons ================================= */
+
+QPushButton {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #171A27, stop:1 #11131C);
+    border: 1px solid #262B3C;
+    border-radius: 3px;
+}
+
+QPushButton:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1E1A2A, stop:1 #16131F);
+    border-color: #6E1C44;
+}
+
+QPushButton:focus {
+    border-color: #00E1F0;
+}
+
+QPushButton:checked,
+QPushButton:checked:hover {
+    background: #351529;
+    border-color: #FF2E88;
+    color: var(--text_light);
+}
+
+QPushButton:pressed,
+QPushButton:pressed:hover {
+    background: var(--grey7);
+    border-color: #FF2E88;
+}
+
+QPushButton:disabled {
+    background: var(--grey6);
+    color: var(--text_disabled);
+    border-color: var(--grey5);
+}
+
+QPushButton[default="true"],
+.button-primary {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FF4D9A, stop:1 #E61E74);
+    border: 1px solid #B8145C;
+    color: #1A0010;
+    font-weight: bold;
+}
+
+QPushButton[default="true"]:hover,
+.button-primary:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FF6BAA, stop:1 #FF2E88);
+    border-color: #FF7AB4;
+}
+
+QToolButton,
+.btn-tool {
+    border-radius: 2px;
+}
+
+QToolButton:hover,
+.btn-tool:hover {
+    background-color: #351529;
+    border-color: #6E1C44;
+}
+
+QToolButton:checked,
+.btn-tool:checked {
+    background: #351529;
+    border-color: #FF2E88;
+}
+
+/* ------------------------------ Controls dock ----------------------------- */
+
+#controlsFrame QPushButton {
+    min-height: 26px;
+    font-weight: bold;
+}
+
+/* Primary action: neon pink */
+#streamButton {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FF4D9A, stop:1 #E61E74);
+    border: 1px solid #FF7AB4;
+    color: #1A0010;
+}
+
+#streamButton:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FF6BAA, stop:1 #FF2E88);
+    border-color: #FFB3D3;
+}
+
+#streamButton:pressed {
+    background: #B8145C;
+    color: #FFFFFF;
+}
+
+/* Live / recording: neon red */
+#streamButton:!hover:!pressed.state-active,
+#broadcastButton:!hover:!pressed.state-active,
+#recordButton:!hover:!pressed.state-active,
+#pauseRecordButton:!hover:!pressed.state-active {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #D91C44, stop:1 #B8123A);
+    border: 1px solid #FF6B85;
+    color: #FFFFFF;
+}
+
+#streamButton:hover:!pressed.state-active,
+#broadcastButton:hover:!pressed.state-active,
+#recordButton:hover:!pressed.state-active,
+#pauseRecordButton:hover:!pressed.state-active {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #E11D48, stop:1 #C0123A);
+    border: 1px solid #FF8098;
+    color: #FFFFFF;
+}
+
+/* Waiting states (Preparing / Connecting, disabled default buttons) */
+#streamButton:disabled,
+QPushButton[default="true"]:disabled,
+.button-primary:disabled {
+    background: var(--grey6);
+    border: 1px solid var(--grey4);
+    color: var(--text_disabled);
+}
+
+/* Virtual camera / replay buffer / studio mode: neon cyan */
+#replayBufferButton:!hover:!pressed.state-active,
+#virtualCamButton:!hover:!pressed.state-active,
+#modeSwitch:!hover:!pressed.state-active {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #22EAF5, stop:1 #00B8C8);
+    border: 1px solid #7FF0F7;
+    color: #001A1D;
+}
+
+#replayBufferButton:hover:!pressed.state-active,
+#virtualCamButton:hover:!pressed.state-active,
+#modeSwitch:hover:!pressed.state-active {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #5CF2FA, stop:1 #00CFDD);
+    border: 1px solid #B8F7FB;
+    color: #001A1D;
+}
+
+/* ================================= Inputs ================================= */
+
+QLineEdit,
+QTextEdit,
+QPlainTextEdit,
+QComboBox,
+QSpinBox,
+QDoubleSpinBox,
+QDateTimeEdit {
+    border: 1px solid var(--input_border);
+    border-radius: 3px;
+    selection-background-color: #FF2E88;
+    selection-color: #1A0010;
+}
+
+/* Text edits are frames; Yami's frameShape rule would otherwise hide the edge */
+QTextEdit:!hover:!focus,
+QPlainTextEdit:!hover:!focus {
+    border: 1px solid var(--input_border);
+}
+
+QComboBox::drop-down,
+QDateTimeEdit::drop-down {
+    border-left: 1px solid var(--grey4);
+}
+
+QSpinBox::up-button,
+QDoubleSpinBox::up-button {
+    border-left: 1px solid var(--grey4);
+}
+
+QSpinBox::down-button,
+QDoubleSpinBox::down-button {
+    border-left: 1px solid var(--grey4);
+    border-top: 1px solid var(--grey4);
+}
+
+/* Radio buttons: themed ring instead of the white native circle */
+QRadioButton::indicator {
+    width: 12px;
+    height: 12px;
+    border: 1px solid var(--grey2);
+    border-radius: 7px;
+    background: var(--grey7);
+}
+
+QRadioButton::indicator:hover {
+    border-color: #6E1C44;
+}
+
+QRadioButton::indicator:checked {
+    border: 1px solid #FF2E88;
+    background: qradialgradient(cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5, stop:0 #FF2E88, stop:0.5 #FF2E88, stop:0.62 #0B0C12, stop:1 #0B0C12);
+}
+
+QRadioButton::indicator:disabled {
+    border-color: var(--grey4);
+    background: var(--grey6);
+}
+
+QRadioButton::indicator:checked:disabled {
+    border-color: var(--grey3);
+    background: qradialgradient(cx:0.5, cy:0.5, radius:0.5, fx:0.5, fy:0.5, stop:0 #3E4560, stop:0.5 #3E4560, stop:0.62 #0E1017, stop:1 #0E1017);
+}
+
+QLineEdit:focus,
+QTextEdit:focus,
+QPlainTextEdit:focus,
+QComboBox:focus,
+QSpinBox:focus,
+QDoubleSpinBox:focus {
+    border-color: #00E1F0;
+    background-color: var(--grey7);
+}
+
+QComboBox QAbstractItemView {
+    background-color: var(--grey6);
+    border: 1px solid var(--grey3);
+    border-radius: 3px;
+    selection-background-color: #351529;
+}
+
+/* ================================ Sliders ================================= */
+
+QSlider::groove {
+    background-color: var(--grey4);
+    border-radius: 1px;
+}
+
+QSlider::groove:horizontal {
+    height: 3px;
+}
+
+QSlider::groove:vertical {
+    width: 3px;
+}
+
+QSlider::sub-page:horizontal {
+    background: #FF2E88;
+    border-radius: 1px;
+}
+
+QSlider::add-page:vertical {
+    background: #FF2E88;
+    border-radius: 1px;
+}
+
+/* Hollow neon ring handle */
+QSlider::handle {
+    background: var(--grey7);
+    border: 2px solid #FF2E88;
+    border-radius: 6px;
+}
+
+QSlider::handle:hover,
+QSlider::handle:pressed {
+    background: #FF2E88;
+    border-color: #FF7AB4;
+}
+
+QSlider::handle:disabled {
+    background: var(--grey5);
+    border-color: var(--grey3);
+}
+
+.slider-tbar::sub-page:horizontal {
+    background: #FF2E88;
+}
+
+/* ============================== Audio meters ============================== */
+
+VolumeMeter {
+    qproperty-backgroundNominalColor: #0B3A42;
+    qproperty-backgroundWarningColor: #3E371F;
+    qproperty-backgroundErrorColor: #3E1626;
+    qproperty-foregroundNominalColor: #00E1F0;
+    qproperty-foregroundWarningColor: #FFD23F;
+    qproperty-foregroundErrorColor: #FF2E63;
+    qproperty-magnitudeColor: #07080C;
+    qproperty-majorTickColor: #8088A3;
+    qproperty-minorTickColor: #2A2F42;
+
+    qproperty-backgroundNominalColorDisabled: #151823;
+    qproperty-backgroundWarningColorDisabled: #1D2130;
+    qproperty-backgroundErrorColorDisabled: #2A2F42;
+    qproperty-foregroundNominalColorDisabled: #6E7794;
+    qproperty-foregroundWarningColorDisabled: #8088A3;
+    qproperty-foregroundErrorColorDisabled: #9AA2BC;
+}
+
+VolumeControl .mixer-category {
+    background: var(--grey5);
+    color: var(--text_muted);
+    border-radius: 2px;
+}
+
+VolumeControl.volume-pinned .mixer-category {
+    background: var(--grey4);
+    color: var(--text_inactive);
+}
+
+/* ================================== Tabs ================================== */
+
+QTabBar::tab {
+    background-color: transparent;
+    color: var(--text_muted);
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0px;
+    margin: 0px 2px;
+}
+
+QTabBar::tab:top {
+    border-bottom: 2px solid transparent;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+}
+
+QTabBar::tab:hover {
+    color: var(--text);
+    border-bottom: 2px solid var(--grey2);
+}
+
+QTabBar::tab:selected {
+    background-color: transparent;
+    color: var(--text_light);
+    border-bottom: 2px solid #FF2E88;
+}
+
+QTabWidget::pane {
+    border: 1px solid var(--grey4);
+    border-radius: 3px;
+}
+
+/* =============================== Scrollbars =============================== */
+
+QScrollBar {
+    background: transparent;
+    border: none;
+}
+
+QScrollBar::handle {
+    background-color: var(--grey3);
+    border: none;
+    border-radius: 2px;
+}
+
+QScrollBar::handle:hover {
+    background-color: #6E1C44;
+}
+
+QScrollBar::handle:pressed {
+    background-color: #FF2E88;
+}
+
+/* ============================ Misc / status bar =========================== */
+
+OBSQTDisplay {
+    qproperty-displayBackgroundColor: #05060A;
+}
+
+/* Ambient cyan glow blending in from the right, monospace timecodes */
+OBSBasicStatusBar {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #07080C, stop:0.65 #0A0B11, stop:1 #081820);
+    border-top: 1px solid #1D2130;
+    color: var(--text_muted);
+}
+
+OBSBasicStatusBar QLabel {
+    font-family: "Consolas";
+    color: #9AA2BC;
+}
+
+QProgressBar {
+    background: var(--grey5);
+    border: none;
+    border-radius: 2px;
+}
+
+QProgressBar::chunk {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #00B8C8, stop:1 #00E1F0);
+    border: none;
+    border-radius: 2px;
+}
+
+QGroupBox {
+    background: var(--grey6);
+    border: 1px solid var(--grey4);
+    border-radius: 3px;
+}
+
+#contextContainer {
+    background: var(--grey6);
+    border-top: 1px solid var(--grey4);
+}
+
+idian--ToggleSwitch {
+    qproperty-background: var(--grey4);
+    qproperty-background_hover: var(--grey3);
+    qproperty-background_checked: #FF2E88;
+    qproperty-background_checked_hover: #FF4D9A;
+}
+
+/* Add Source dialog tiles */
+SourceSelectButton {
+    background: var(--grey5);
+    border: 1px solid var(--grey3);
+    border-radius: 3px;
+}
+
+SourceSelectButton:hover {
+    background: var(--grey4);
+    border-color: #6E1C44;
+}
+
+SourceSelectButton:checked,
+SourceSelectButton:checked:hover {
+    background: #351529;
+    border: 1px solid #FF2E88;
+}
+
+SourceSelectButton:focus {
+    border-color: #00E1F0;
+}
+
+SourceSelectButton:checked:focus {
+    border-color: #FF7AB4;
+}
+
+.button-primary:focus {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FF4D9A, stop:1 #E61E74);
+    border-color: #00E1F0;
+}
+
+.button-primary:hover:focus {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FF6BAA, stop:1 #FF2E88);
+}
+
+/* YouTube Manage Broadcast list */
+#ytEventList .row-selected {
+    background-color: #351529;
+    color: #FFFFFF;
+}
+
+#ytEventList .row-selected:hover {
+    background-color: #481732;
+    color: #FFFFFF;
+}
+
+QCalendarWidget QToolButton:hover {
+    background-color: #351529;
+}

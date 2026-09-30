@@ -1,0 +1,601 @@
+/* ------------------------------------------------------------------------- *
+ * Prism: a professional graphite style for OBS Studio.
+ *
+ * Design notes
+ *   - Neutral graphite surfaces in tight, even steps so panels read as one
+ *     calm workspace and the video preview stays the focus.
+ *   - One accent (signal amber), used sparingly: the primary action, the
+ *     current selection and focus. Selections are a soft amber tint with a
+ *     solid amber edge rather than a full colour block.
+ *   - Buttons use a subtle same-hue vertical blend for a tactile, hardware
+ *     feel. No multi-hue gradients.
+ *   - Broadcast tally colours: red when live or recording, teal for virtual
+ *     camera / replay buffer, standard green-amber-red meters.
+ * ------------------------------------------------------------------------- */
+
+@OBSThemeMeta {
+    name: 'Prism';
+    id: 'com.obsproject.Yami.Prism';
+    extends: 'com.obsproject.Yami';
+    author: 'TWISTEDST1';
+    dark: 'true';
+}
+
+@OBSThemeVars {
+    /* Graphite surfaces (1 = lightest, 8 = darkest) */
+    --grey1: #7A808B;
+    --grey2: #4A4F58;
+    --grey3: #383C44;
+    --grey4: #2C3036;
+    --grey5: #23262B;
+    --grey6: #1B1D21;
+    --grey7: #16171A;
+    --grey8: #111214;
+
+    /* OBS palette blues remapped into the accent family */
+    --blue1: #FFB070;
+    --blue2: #F28C28;
+    --blue3: #F28C28;
+    --blue4: #E57E1C;
+    --blue5: #533A23;
+    --blue6: #2A241E;
+
+    /* Accent: signal amber */
+    --primary: #F28C28;
+    --primary_light: #F59A3E;
+    --primary_lighter: #FFB070;
+    --primary_dark: #E57E1C;
+    --primary_darker: #C86A12;
+
+    --text: #ECEDEF;
+    --text_light: #FFFFFF;
+    --text_muted: #8B9099;
+    --text_disabled: #5A5F68;
+    --text_inactive: #D5D7DB;
+
+    --bg_window: var(--grey8);
+    --bg_base: var(--grey6);
+    --bg_preview: #0B0C0D;
+
+    --border_color: var(--grey4);
+    --border_radius: 6px;
+    --border_radius_small: 4px;
+    --border_radius_large: 8px;
+
+    --input_bg: var(--grey5);
+    --input_bg_hover: var(--grey4);
+    --input_bg_focus: var(--grey7);
+    --input_border: var(--grey3);
+    --input_border_hover: var(--grey2);
+    --input_border_focus: var(--primary);
+
+    --list_item_bg_selected: #423122;
+    --list_item_bg_hover: var(--grey5);
+
+    --button_bg: var(--grey5);
+    --button_bg_hover: var(--grey4);
+    --button_bg_down: var(--grey7);
+    --button_bg_disabled: var(--grey6);
+    --button_border: var(--grey3);
+    --button_border_hover: var(--grey2);
+    --button_border_focus: var(--primary);
+
+    --tab_bg: var(--grey6);
+    --tab_bg_hover: var(--grey5);
+    --tab_bg_down: var(--grey4);
+    --tab_border: var(--grey4);
+    --tab_border_hover: var(--grey2);
+    --tab_border_focus: var(--primary);
+    --tab_border_selected: var(--primary);
+
+    --scrollbar_size: 10px;
+    --scrollbar_bg: var(--grey6);
+    --scrollbar_handle: var(--grey3);
+    --scrollbar_hover: var(--grey2);
+    --scrollbar_down: var(--grey1);
+    --scrollbar_border: var(--grey6);
+
+    --separator_hover: var(--primary);
+    --highlight_color: var(--primary);
+
+    --palette_link: #FFB070;
+    --palette_linkVisited: #F59A3E;
+}
+
+/* ============================== Window chrome ============================= */
+
+QMainWindow,
+QDialog {
+    background-color: var(--bg_window);
+}
+
+QMenuBar {
+    background-color: var(--bg_window);
+    border-bottom: 1px solid var(--grey5);
+}
+
+QMenuBar::item {
+    border-radius: 4px;
+    margin: 3px 1px;
+    color: var(--text_inactive);
+}
+
+QMenuBar::item:selected {
+    background: var(--grey4);
+    color: var(--text_light);
+}
+
+QMenu {
+    background-color: var(--grey6);
+    border: 1px solid var(--grey3);
+    border-radius: 8px;
+    padding: 5px;
+}
+
+QMenu::item {
+    border-radius: 4px;
+}
+
+QMenu::item:selected,
+QMenu::item:selected:hover {
+    background: #423122;
+    border: 1px solid #533A23;
+    color: var(--text_light);
+}
+
+QMenu::separator {
+    background: var(--grey4);
+}
+
+QToolTip {
+    background-color: var(--grey5);
+    color: var(--text);
+    border: 1px solid var(--grey3);
+    border-radius: 4px;
+    padding: 4px 8px;
+}
+
+QMainWindow::separator:hover {
+    border: none;
+    background: var(--grey2);
+}
+
+/* ================================= Docks ================================== */
+
+QDockWidget {
+    color: var(--text_muted);
+    font-weight: bold;
+}
+
+QDockWidget::title {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #202328, stop:1 #1B1D21);
+    border: 1px solid var(--grey5);
+    border-bottom: 1px solid var(--grey4);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    padding: 6px 10px;
+}
+
+QDockWidget::close-button:hover,
+QDockWidget::float-button:hover {
+    background: var(--grey4);
+}
+
+OBSDock > QWidget {
+    background: var(--grey6);
+    border: 1px solid var(--grey5);
+    border-top: none;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+OBSDock QToolBar {
+    border-top: 1px solid var(--grey5);
+    background: transparent;
+}
+
+OBSDock QToolBar QToolButton {
+    border-radius: 4px;
+}
+
+OBSDock QToolBar QToolButton:hover {
+    background: var(--grey4);
+    border-color: var(--grey3);
+}
+
+OBSDock QToolBar QToolButton:disabled {
+    background: transparent;
+}
+
+/* ============================= Lists & trees ============================== */
+
+QListView,
+QListWidget,
+QTreeView,
+SourceTree,
+SceneTree {
+    background: transparent;
+    border: none;
+}
+
+QListView::item,
+QListWidget::item,
+SourceTreeItem {
+    border-radius: 4px;
+    border: 1px solid transparent;
+    margin: 1px 2px;
+}
+
+QListView::item:hover,
+QListWidget::item:hover {
+    background: var(--grey5);
+    border: 1px solid var(--grey5);
+}
+
+/* Selection: amber tint with a solid amber edge */
+QListView::item:selected,
+QListWidget::item:selected {
+    background: #423122;
+    border: 1px solid #423122;
+    border-left: 3px solid #F28C28;
+    color: var(--text_light);
+}
+
+QListView::item:selected:hover,
+QListWidget::item:selected:hover {
+    background: #533A23;
+    border: 1px solid #533A23;
+    border-left: 3px solid #F28C28;
+    color: var(--text_light);
+}
+
+QListView::item:focus,
+QListWidget::item:focus,
+QListView::item:selected:focus,
+QListWidget::item:selected:focus {
+    border-left: 3px solid #F28C28;
+}
+
+.list-grid SceneTree::item {
+    border-radius: 6px;
+    background: var(--grey5);
+    border: 1px solid var(--grey4);
+}
+
+.list-grid SceneTree::item:hover {
+    background: var(--grey4);
+}
+
+.list-grid SceneTree::item:selected,
+.list-grid SceneTree::item:checked,
+.list-grid SceneTree::item:selected:hover {
+    background: #423122;
+    border: 1px solid #F28C28;
+}
+
+QHeaderView::section {
+    background-color: var(--grey5);
+    color: var(--text_muted);
+    border: none;
+    border-right: 1px solid var(--grey4);
+    padding: 4px 8px;
+}
+
+/* ================================ Buttons ================================= */
+
+/* Tactile look: a subtle same-hue blend, lighter at the top */
+QPushButton {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2A2D33, stop:1 #222429);
+    border: 1px solid #34383F;
+    border-radius: 6px;
+}
+
+QPushButton:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #32363D, stop:1 #2A2D32);
+    border-color: #454A53;
+}
+
+QPushButton:focus {
+    border-color: #F28C28;
+}
+
+QPushButton:checked,
+QPushButton:checked:hover {
+    background: #423122;
+    border-color: #F28C28;
+    color: var(--text_light);
+}
+
+QPushButton:pressed,
+QPushButton:pressed:hover {
+    background: var(--grey7);
+    border-color: var(--grey3);
+}
+
+QPushButton:disabled {
+    background: var(--grey6);
+    color: var(--text_disabled);
+    border-color: var(--grey5);
+}
+
+QPushButton[default="true"],
+.button-primary {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #F59A3E, stop:1 #E57E1C);
+    border: 1px solid #C86A12;
+    color: #1A1206;
+    font-weight: bold;
+}
+
+QPushButton[default="true"]:hover,
+.button-primary:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFA650, stop:1 #F28C28);
+    border-color: #E57E1C;
+}
+
+QToolButton,
+.btn-tool {
+    border-radius: 4px;
+}
+
+QToolButton:hover,
+.btn-tool:hover {
+    background-color: var(--grey4);
+    border-color: var(--grey3);
+}
+
+QToolButton:checked,
+.btn-tool:checked {
+    background: #423122;
+    border-color: #F28C28;
+}
+
+/* ------------------------------ Controls dock ----------------------------- */
+
+#controlsFrame QPushButton {
+    min-height: 26px;
+    font-weight: bold;
+}
+
+/* Primary action: Start Streaming stands out as the one amber button */
+#streamButton {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #F59A3E, stop:1 #E57E1C);
+    border: 1px solid #C86A12;
+    color: #1A1206;
+}
+
+#streamButton:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFA650, stop:1 #F28C28);
+    border-color: #E57E1C;
+}
+
+#streamButton:pressed {
+    background: #C86A12;
+}
+
+/* Tally red: live / recording */
+#streamButton:!hover:!pressed.state-active,
+#broadcastButton:!hover:!pressed.state-active,
+#recordButton:!hover:!pressed.state-active,
+#pauseRecordButton:!hover:!pressed.state-active {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #E5484D, stop:1 #C9373C);
+    border: 1px solid #A82C31;
+    color: #FFFFFF;
+}
+
+#streamButton:hover:!pressed.state-active,
+#broadcastButton:hover:!pressed.state-active,
+#recordButton:hover:!pressed.state-active,
+#pauseRecordButton:hover:!pressed.state-active {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #EC5D62, stop:1 #D44348);
+    border: 1px solid #C9373C;
+    color: #FFFFFF;
+}
+
+/* Teal: virtual camera, replay buffer, studio mode */
+#replayBufferButton:!hover:!pressed.state-active,
+#virtualCamButton:!hover:!pressed.state-active,
+#modeSwitch:!hover:!pressed.state-active {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #14B8A6, stop:1 #0E9486);
+    border: 1px solid #0B7A6F;
+    color: #FFFFFF;
+}
+
+#replayBufferButton:hover:!pressed.state-active,
+#virtualCamButton:hover:!pressed.state-active,
+#modeSwitch:hover:!pressed.state-active {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #22C7B5, stop:1 #12A594);
+    border: 1px solid #0B7A6F;
+    color: #FFFFFF;
+}
+
+/* ================================= Inputs ================================= */
+
+QLineEdit,
+QTextEdit,
+QPlainTextEdit,
+QComboBox,
+QSpinBox,
+QDoubleSpinBox,
+QDateTimeEdit {
+    border-radius: 5px;
+    selection-background-color: #F28C28;
+    selection-color: #1A1206;
+}
+
+QLineEdit:focus,
+QTextEdit:focus,
+QPlainTextEdit:focus,
+QComboBox:focus,
+QSpinBox:focus,
+QDoubleSpinBox:focus {
+    border-color: #F28C28;
+    background-color: var(--grey7);
+}
+
+QComboBox QAbstractItemView {
+    background-color: var(--grey6);
+    border: 1px solid var(--grey3);
+    border-radius: 6px;
+    selection-background-color: #423122;
+}
+
+/* ================================ Sliders ================================= */
+
+QSlider::groove {
+    background-color: var(--grey4);
+    border-radius: 2px;
+}
+
+QSlider::groove:horizontal {
+    height: 4px;
+}
+
+QSlider::groove:vertical {
+    width: 4px;
+}
+
+QSlider::sub-page:horizontal {
+    background: #F28C28;
+    border-radius: 2px;
+}
+
+QSlider::add-page:vertical {
+    background: #F28C28;
+    border-radius: 2px;
+}
+
+QSlider::handle {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #D5D7DB);
+    border: 1px solid #16171A;
+    border-radius: 6px;
+}
+
+QSlider::handle:hover,
+QSlider::handle:pressed {
+    background: #FFFFFF;
+    border-color: #F28C28;
+}
+
+/* ============================== Audio meters ============================== */
+
+VolumeMeter {
+    qproperty-backgroundNominalColor: #1C3A2B;
+    qproperty-backgroundWarningColor: #3D3418;
+    qproperty-backgroundErrorColor: #45211F;
+    qproperty-foregroundNominalColor: #3DD68C;
+    qproperty-foregroundWarningColor: #F5C542;
+    qproperty-foregroundErrorColor: #F0525A;
+    qproperty-magnitudeColor: #FFFFFF;
+    qproperty-majorTickColor: #8B9099;
+    qproperty-minorTickColor: #383C44;
+}
+
+VolumeControl .mixer-category {
+    background: var(--grey5);
+    color: var(--text_muted);
+    border-radius: 4px;
+}
+
+VolumeControl.volume-pinned .mixer-category {
+    background: var(--grey4);
+    color: var(--text_inactive);
+}
+
+/* ================================== Tabs ================================== */
+
+QTabBar::tab {
+    background-color: transparent;
+    color: var(--text_muted);
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0px;
+    margin: 0px 2px;
+}
+
+QTabBar::tab:hover {
+    color: var(--text);
+    border-bottom: 2px solid var(--grey2);
+}
+
+QTabBar::tab:selected {
+    background-color: transparent;
+    color: var(--text_light);
+    border-bottom: 2px solid #F28C28;
+}
+
+QTabWidget::pane {
+    border: 1px solid var(--grey4);
+    border-radius: 8px;
+}
+
+/* =============================== Scrollbars =============================== */
+
+QScrollBar {
+    background: transparent;
+    border: none;
+}
+
+QScrollBar::handle {
+    background-color: var(--grey3);
+    border: none;
+    border-radius: 4px;
+}
+
+QScrollBar::handle:hover {
+    background-color: var(--grey2);
+}
+
+QScrollBar::handle:pressed {
+    background-color: var(--grey1);
+}
+
+/* ============================ Misc / status bar =========================== */
+
+OBSQTDisplay {
+    qproperty-displayBackgroundColor: #0B0C0D;
+}
+
+OBSBasicStatusBar {
+    background: var(--bg_window);
+    border-top: 1px solid var(--grey5);
+    color: var(--text_muted);
+}
+
+QProgressBar {
+    background: var(--grey5);
+    border: none;
+    border-radius: 3px;
+}
+
+QProgressBar::chunk {
+    background: #F28C28;
+    border: none;
+    border-radius: 3px;
+}
+
+QGroupBox {
+    background: var(--grey6);
+    border: 1px solid var(--grey5);
+    border-radius: 8px;
+}
+
+#contextContainer {
+    background: var(--grey6);
+    border-top: 1px solid var(--grey5);
+}
+
+idian--ToggleSwitch {
+    qproperty-background: var(--grey4);
+    qproperty-background_hover: var(--grey3);
+    qproperty-background_checked: #F28C28;
+    qproperty-background_checked_hover: #F59A3E;
+}
+
+SourceSelectButton QPushButton:checked {
+    background: #423122;
+    border-color: #F28C28;
+}
+
+QCalendarWidget QToolButton:hover {
+    background-color: var(--grey4);
+}
